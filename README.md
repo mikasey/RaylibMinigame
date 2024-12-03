@@ -1,1 +1,1 @@
-# RaylibMinigame
+# Simple CMake template for raylib and raygui development
