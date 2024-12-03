@@ -7,28 +7,48 @@
 
 class Game{
 private:
+// Window properties
 	const char* win_name = "Game!!!";
 	int win_width = 800, win_height = 600, win_target_fps = 60;
 
+// Camera properties
 	Vector3 camera_pos{0, 0, 0};
 	Vector3 camera_rot{0, 0, 0};
 	float camera_zoom = 1.f;
 
-// resources
-	const char* assets_folder = "assets/";
-	enum {
-		TEX_NULL = 0,
-		TEX_CAT,
-		TEX_HEART,
-		TEXTURES_COUNT
-	};
-	const char* texture_names[TEXTURES_COUNT]{
-		"textures/null_texture.png",
-		"textures/cat.png",
-		"textures/uwu_heart.png"
-	};
+// Texture resources
+	class Textures{
+	public:
+		const char* folder = "assets/textures/";
+		enum{
+			no_texture = 0,
+			cat,
+			heart,
+			count
+		};
+		const char* texture_names[count]{
+			"null_texture.png",
+			"cat.png",
+			"uwu_heart.png"
+		};
+		Texture2D* game_textures = nullptr;
+	}Textures;
 
-	Texture2D* game_textures;
+// Audio resources
+	class Sounds{
+	public:
+		const char* folder = "assets/sounds/";
+		enum{
+			test_sound = 0,
+			oof,
+			count
+		};
+		const char* sound_names[count]{
+			"test.ogg",
+			"OOF.ogg"
+		};
+		Sound* game_sounds = nullptr;
+	}Sounds;
 
 public:
 	Game(){
@@ -50,26 +70,42 @@ public:
 
 	void LoadResources(){
 		std::string file_name;
-		game_textures = new Texture2D[TEXTURES_COUNT];
+		Textures.game_textures = new Texture2D[Textures::count];
+		Sounds.game_sounds = new Sound[Sounds::count];
 
-		for(int i = 0; i < TEXTURES_COUNT; i++){
-			file_name = assets_folder;
-			game_textures[i] = LoadTexture((file_name + texture_names[i]).c_str());
+		for(int i = 0; i < Sounds::count; i++){
+			file_name = Sounds.folder;
+			Sounds.game_sounds[i] = LoadSound((file_name + Sounds.sound_names[i]).c_str());
 		}
+		for(int i = 0; i < Textures::count; i++){
+			file_name = Textures.folder;
+			Textures.game_textures[i] = LoadTexture((file_name + Textures.texture_names[i]).c_str());
+		}
+
+		PlaySound(Sounds.game_sounds[Sounds::oof]);
 	}
 
 	void UnloadResources(){
-	// Unload all Texture2D from game_textures
-		for(int i = 0; i < TEXTURES_COUNT; i++){
-			UnloadTexture(game_textures[i]);
+	// Unload all sounds
+		for(int i = 0; i < Sounds::count; i++){
+			UnloadSound(Sounds.game_sounds[i]);
+		}
+	// Unload all Texture2D
+		for(int i = 0; i < Textures::count; i++){
+			UnloadTexture(Textures.game_textures[i]);
 		}
 
-		delete[] game_textures;
+		delete[] Textures.game_textures;
+		delete[] Sounds.game_sounds;
 	}
 
 	void GameLoop(){
 		while(!WindowShouldClose()){
 			// PullEvents();
+
+			if(IsKeyPressed(KEY_SPACE)) {
+				PlaySound(Sounds.game_sounds[Sounds::test_sound]);
+			}
 
 			DrawAll();
 
@@ -89,13 +125,13 @@ public:
 		BeginDrawing();
 		{
 			ClearBackground(RAYWHITE);
-			const int texture_x = screen_width / 2 - game_textures[TEX_HEART].width / 2;
-			const int texture_y = screen_height / 2 - game_textures[TEX_HEART].height / 2;
-			DrawTexture(game_textures[TEX_CAT], screen_width - game_textures[TEX_CAT].width, screen_height - game_textures[TEX_CAT].height, WHITE);
-			DrawTexture(game_textures[TEX_HEART], texture_x, texture_y, WHITE);
+			const int texture_x = screen_width / 2 - Textures.game_textures[Textures::heart].width / 2;
+			const int texture_y = screen_height / 2 - Textures.game_textures[Textures::heart].height / 2;
+			DrawTexture(Textures.game_textures[Textures::cat], screen_width - Textures.game_textures[Textures::cat].width, screen_height - Textures.game_textures[Textures::cat].height, WHITE);
+			DrawTexture(Textures.game_textures[Textures::heart], texture_x, texture_y, WHITE);
 			const char* text = "OMG! IT WORKS!";
 			const Vector2 text_size = MeasureTextEx(GetFontDefault(), text, 20, 1);
-			DrawText(text, screen_width / 2 - (int)(text_size.x) / 2, texture_y + game_textures[TEX_HEART].height + (int)(text_size.y), 20, BLACK);
+			DrawText(text, screen_width / 2 - (int)(text_size.x) / 2, texture_y + Textures.game_textures[Textures::heart].height + (int)(text_size.y), 20, BLACK);
 
 
 			GuiEnable();
